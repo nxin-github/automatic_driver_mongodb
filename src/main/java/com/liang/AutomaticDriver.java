@@ -70,7 +70,7 @@ public class AutomaticDriver {
             }
             if (version != null) {
                 needExecuteList = filterExecutableFiles(version, allDocuments);
-                Collections.sort(allDocuments);
+                Collections.sort(needExecuteList);
             } else {
                 Collections.sort(allDocuments);
                 needExecuteList = allDocuments;
