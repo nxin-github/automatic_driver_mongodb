@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -69,7 +71,6 @@ public class AutomaticDriver {
                 needExecuteList = filterExecutableFiles(version, allDocuments);
             } else {
                 Collections.sort(allDocuments);
-                Collections.reverse(allDocuments);
                 needExecuteList = allDocuments;
             }
             // 执行这些文件
@@ -105,7 +106,7 @@ public class AutomaticDriver {
                     int indexOf = StringUtils.ordinalIndexOf(fileName, "-", 1);
                     String execteVersion = StringUtils.substring(fileName, 0, indexOf);
                     OperateDocumentImpl operateDocument = new OperateDocumentImpl();
-                    String utilFileContent = "{\"version\":\"" + execteVersion + "\",\"scriptName\":\"" + fileName + "\",\"executionTime\":\"" + System.currentTimeMillis() + "\"}";
+                    String utilFileContent = "{\"version\":\"" + execteVersion + "\",\"scriptName\":\"" + fileName + "\",\"executionTime\":\"" + System.currentTimeMillis() + "\",\"executionDate\":\"" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")) + "\"}";
                     operateDocument.createDocument(dbName, AUTOMATIC_DRIVE_DOCUMENTATION, utilFileContent);
                 }
             } catch (IOException e) {
