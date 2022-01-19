@@ -20,6 +20,7 @@ public class AutomaticDriveMonitor implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         try {
+            System.out.println("automatic_driver_mongodb:监听到了spring启动");
             automaticDriver.init(null, null, null);
         } catch ( IOException e) {
             e.printStackTrace();

@@ -6,7 +6,7 @@
 
     <groupId>com.liang</groupId>
     <artifactId>automatic_driver_mongodb</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>0.1-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>
@@ -45,7 +45,12 @@
             <artifactId>json</artifactId>
             <version>20160810</version>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.10</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
-
 
 </project>

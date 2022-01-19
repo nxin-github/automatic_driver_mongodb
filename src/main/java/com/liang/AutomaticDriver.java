@@ -3,6 +3,7 @@ package com.liang;
 import com.liang.api.impl.OperateCollectionImpl;
 import com.liang.api.impl.OperateDatabaseImpl;
 import com.liang.api.impl.OperateDocumentImpl;
+import com.liang.config.ParameterObject;
 import com.liang.internal.AutomaticDriveException;
 import com.liang.internal.MongoUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -12,10 +13,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -28,7 +26,7 @@ import java.util.*;
 @Service
 public class AutomaticDriver {
     private final String AUTOMATIC_DRIVE_DOCUMENTATION = "automatic_drive";
-    private final String FOLDER = "mongofile/*";
+    private final String FOLDER = "classpath*:/mongofile/*.properties";
     private boolean dropDatabase = false;
     @Autowired
     private MongoUtil mongoUtil;
@@ -42,22 +40,16 @@ public class AutomaticDriver {
         }
         //获取连接
         mongoUtil.getMongoClient(uriNullable, ip, prot);
-        //处理每个文件夹
+        System.out.println("automatic_driver_mongodb:获取到了连接");
+        //获取所有文件
         Resource[] resources = new PathMatchingResourcePatternResolver().getResources(FOLDER);
         if (resources.length == 0) {
             return;
         }
-
+        Properties properties = new Properties();
         for (Resource resource : resources) {
-            List<String> needExecuteList;
-            Map<String, Object> stringArrayListMap = processFile(resource);
-            // 获取数据库名
-            String dbName = (String) stringArrayListMap.get("fileName");
-            //
-            String path = (String) stringArrayListMap.get("filePath");
-            //文件夹下所有文件
-            ArrayList<String> allDocuments = (ArrayList<String>) stringArrayListMap.get("resultArray");
-
+            ParameterObject documentMessage = getDocumentMessage(resource, properties);
+            String dbName = documentMessage.getDbName();
             // 获取工具表
             OperateDocumentImpl operateDocument = new OperateDocumentImpl();
             Document automaticDrive = operateDocument.getDocument(dbName, AUTOMATIC_DRIVE_DOCUMENTATION, null).first();
@@ -68,18 +60,34 @@ public class AutomaticDriver {
             } else {
                 version = (String) automaticDrive.get("version");
             }
+            // 获取当前文件版本号
+            int indexOf = StringUtils.ordinalIndexOf(resource.getFilename(), "-", 1);
+            String execteVersion = StringUtils.substring(resource.getFilename(), 0, indexOf);
             if (version != null) {
-                needExecuteList = filterExecutableFiles(version, allDocuments);
-                Collections.sort(needExecuteList);
-            } else {
-                Collections.sort(allDocuments);
-                needExecuteList = allDocuments;
+                assert execteVersion != null;
+                if (version.compareTo(execteVersion)>0) {
+                    continue;
+                }
+
             }
             // 执行这些文件
-            execteDocument(dbName, path, needExecuteList);
+            execteDocument(documentMessage, resource.getFilename());
         }
 
         mongoUtil.close();
+    }
+
+    private ParameterObject getDocumentMessage(Resource resource, Properties properties) throws IOException {
+        // 使用properties对象加载输入流
+        properties.load(new InputStreamReader(resource.getInputStream(), "UTF-8"));
+        return ParameterObject.builder()
+                .dbName(properties.getProperty("dbName"))
+                .condition(properties.getProperty("condition"))
+                .content(properties.getProperty("content"))
+                .operation(properties.getProperty("operation"))
+                .terget(properties.getProperty("terget"))
+                .tergetname(properties.getProperty("tergetname"))
+                .build();
     }
 
     /**
@@ -87,33 +95,18 @@ public class AutomaticDriver {
      *@参数  void
      *@返回值  void
      */
-    private void execteDocument(String dbName ,String path, List<String> needExecuteList) {
-        Properties properties = new Properties();
-        for (String fileName : needExecuteList) {
-            dropDatabase = false;
-            try {
-                // 使用ClassLoader加载properties配置文件生成对应的输入流
-                InputStream in = AutomaticDriver.class.getClassLoader().getResourceAsStream(path + "\\" + fileName);
-                // 使用properties对象加载输入流
-                properties.load(new InputStreamReader(in,"UTF-8"));
-                String terget = (String) properties.get("terget");
-                String tergetname = (String) properties.get("tergetname");
-                String operation = (String) properties.get("operation");
-                String content = (String) properties.get("content");
-                String condition = (String) properties.get("condition");
-                // 执行文件
-                executeFile(dbName, terget, operation, content, condition, tergetname);
-                if (!dropDatabase) {
-                    // 更新工具表
-                    int indexOf = StringUtils.ordinalIndexOf(fileName, "-", 1);
-                    String execteVersion = StringUtils.substring(fileName, 0, indexOf);
-                    OperateDocumentImpl operateDocument = new OperateDocumentImpl();
-                    String utilFileContent = "{\"version\":\"" + execteVersion + "\",\"scriptName\":\"" + fileName + "\",\"executionTime\":\"" + System.currentTimeMillis() + "\",\"executionDate\":\"" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")) + "\"}";
-                    operateDocument.createDocument(dbName, AUTOMATIC_DRIVE_DOCUMENTATION, utilFileContent);
-                }
-            } catch (IOException e) {
-                throw new AutomaticDriveException("AutomaticDiver：properties load inputStream error", e);
-            }
+    private void execteDocument(ParameterObject parameterObject, String fileName) {
+        dropDatabase = false;
+            // 执行文件
+        executeFile(parameterObject);
+        if (!dropDatabase) {
+            // 更新工具表
+            int indexOf = StringUtils.ordinalIndexOf(fileName, "-", 1);
+            String execteVersion = StringUtils.substring(fileName, 0, indexOf);
+            OperateDocumentImpl operateDocument = new OperateDocumentImpl();
+            String utilFileContent = "{\"version\":\"" + execteVersion + "\",\"scriptName\":\"" + fileName + "\",\"executionTime\":\"" + System.currentTimeMillis() + "\",\"executionDate\":\"" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")) + "\"}";
+            operateDocument.createDocument(parameterObject.getDbName(), AUTOMATIC_DRIVE_DOCUMENTATION, utilFileContent);
+            System.out.println("automatic_driver_mongodb：更新工具表");
         }
     }
 
@@ -126,25 +119,21 @@ public class AutomaticDriver {
      *     String tergetname 目标内容,名字
      *@返回值
      */
-    private void executeFile(String dbName ,
-                             String terget ,
-                             String operation,
-                             String content,
-                             String condition,
-                             String tergetname) {
-        if (terget == null) {
+    private void executeFile(ParameterObject documentMessage) {
+        if (documentMessage.getTerget() == null) {
             throw new AutomaticDriveException("Terget cannot be empty");
         }
-        switch (terget) {
+
+        switch (documentMessage.getTerget()) {
             // 数据库操作
             case "database":
                 OperateDatabaseImpl operateDatabase = new OperateDatabaseImpl();
-                switch (operation) {
+                switch (documentMessage.getOperation()) {
                     case "create":
-                        operateDatabase.creatDatabase(tergetname);
+                        operateDatabase.creatDatabase(documentMessage.getTergetname());
                         return;
                     case "drop":
-                        operateDatabase.dropDB(tergetname);
+                        operateDatabase.dropDB(documentMessage.getTergetname());
                         dropDatabase = true;
                         return;
                     case "update":
@@ -155,12 +144,12 @@ public class AutomaticDriver {
             // 集合操作
             case "collection":
                 OperateCollectionImpl operateCollection = new OperateCollectionImpl();
-                switch (operation) {
+                switch (documentMessage.getOperation()) {
                     case "create":
-                        operateCollection.createCollection(dbName, tergetname, content);
+                        operateCollection.createCollection(documentMessage.getDbName(), documentMessage.getTergetname(), documentMessage.getContent());
                         return;
                     case "drop":
-                        operateCollection.deleteCollection(dbName, tergetname);
+                        operateCollection.deleteCollection(documentMessage.getDbName(), documentMessage.getTergetname());
                         return;
                     case "update":
                         throw new AutomaticDriveException("The collection cannot be renamed");
@@ -169,21 +158,21 @@ public class AutomaticDriver {
                 }
             case "document":
                 OperateDocumentImpl operateDocument = new OperateDocumentImpl();
-                switch (operation) {
+                switch (documentMessage.getOperation()) {
                     case "create":
-                        operateDocument.createDocument(dbName, tergetname, content);
+                        operateDocument.createDocument(documentMessage.getDbName(), documentMessage.getTergetname(), documentMessage.getContent());
                         return;
                     case "drop":
-                        operateDocument.deleteDocument(dbName, tergetname, condition);
+                        operateDocument.deleteDocument(documentMessage.getDbName(), documentMessage.getTergetname(), documentMessage.getCondition());
                         return;
                     case "update":
-                        operateDocument.updateDocument(dbName, tergetname, condition, content);
+                        operateDocument.updateDocument(documentMessage.getDbName(), documentMessage.getTergetname(), documentMessage.getCondition(), documentMessage.getContent());
                         return;
                     default:
                         throw new AutomaticDriveException("operation type erro");
                 }
             case "field":
-                switch (operation) {
+                switch (documentMessage.getOperation()) {
                     case "create":
                         throw new AutomaticDriveException("The field cannot be create");
                     case "drop":
@@ -196,51 +185,5 @@ public class AutomaticDriver {
             default:
                 throw new AutomaticDriveException("terget type erro");
         }
-    }
-
-    /**
-     *@描述   筛选掉不需要执行的文件
-     *@参数  java.util.List<java.lang.String>
-     *@返回值  java.util.List<java.lang.String>
-     */
-    private List<String> filterExecutableFiles(String version, ArrayList<String> allDocuments) {
-        allDocuments.add(version);
-        Collections.sort(allDocuments);
-        Collections.reverse(allDocuments);
-        int indexOfVersion = allDocuments.indexOf(version);
-        if (indexOfVersion <= 1) {
-            return allDocuments.subList(0, 0);
-        }
-        return allDocuments.subList(0, indexOfVersion - 1);
-    }
-
-    /**
-     * @描述 处理文件夹下的子文件
-     * @参数 java.util.ArrayList<java.io.InputStream>
-     * @返回值 java.util.ArrayList<java.io.InputStream>
-     */
-    private static Map<String, Object> processFile(Resource resource) throws IOException {
-        Map<String, Object> resultMap = new HashMap<>();
-        ArrayList<String> subFileNameList = new ArrayList<>();
-
-        File file = new File(resource.getURI());
-        String filePath = file.getPath();
-        String fileName = file.getName();
-        String path = StringUtils.substringAfter(filePath, "classes\\");
-
-        //如果是一个文件夹
-        if (file.isDirectory()) {
-            String[] subFlieList = file.list();
-            assert (subFlieList != null);
-            for (String subFileName : subFlieList) {
-                subFileNameList.add(subFileName);
-            }
-        } else {
-            subFileNameList.add(fileName);
-        }
-        resultMap.put("fileName", fileName);
-        resultMap.put("resultArray", subFileNameList);
-        resultMap.put("filePath", path);
-        return resultMap;
     }
 }
