@@ -42,10 +42,13 @@ public class AutomaticDriver {
         mongoUtil.getMongoClient(uriNullable, ip, prot);
         System.out.println("automatic_driver_mongodb:获取到了连接");
         //获取所有文件
-        Resource[] resources = new PathMatchingResourcePatternResolver().getResources(FOLDER);
-        if (resources.length == 0) {
+        Resource[] resourcesDocuments = new PathMatchingResourcePatternResolver().getResources(FOLDER);
+        if (resourcesDocuments.length == 0) {
             return;
         }
+        //对文件进行排序
+        Resource[] resources = sortDocuments(resourcesDocuments);
+
         Properties properties = new Properties();
         for (Resource resource : resources) {
             ParameterObject documentMessage = getDocumentMessage(resource, properties);
@@ -77,6 +80,33 @@ public class AutomaticDriver {
         mongoUtil.close();
     }
 
+    /**
+     *@描述   对文件数组进行排序
+     *@参数  org.springframework.core.io.Resource[]
+     *@返回值  org.springframework.core.io.Resource[]
+     */
+    private Resource[] sortDocuments(Resource[] resources) {
+        int len = resources.length;
+        int preIndex;
+        Resource current;
+
+        for (int i = 1; i < len; i++) {
+            preIndex = i - 1;
+            current = resources[i];
+            while (preIndex >= 0 && Objects.requireNonNull(resources[preIndex].getFilename()).compareTo(Objects.requireNonNull(current.getFilename())) > 0) {
+                resources[preIndex + 1] = resources[preIndex];
+                preIndex--;
+            }
+            resources[preIndex + 1] = current;
+        }
+        return resources;
+    }
+
+    /**
+     *@描述  获取执行文件内部信息
+     *@参数  com.liang.config.ParameterObject
+     *@返回值  com.liang.config.ParameterObject
+     */
     private ParameterObject getDocumentMessage(Resource resource, Properties properties) throws IOException {
         // 使用properties对象加载输入流
         properties.load(new InputStreamReader(resource.getInputStream(), "UTF-8"));
