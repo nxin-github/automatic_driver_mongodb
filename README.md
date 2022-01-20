@@ -22,9 +22,9 @@
     2、在resource下创建mongofile文件夹，该文件夹为被扫描主文件夹。下面再创建以数据库名为命名的子文件夹，下面再创建要执行操作的propertifile文件即可  
 三、注意事项：  
     1、文件夹层级关系如下（支持多数据库同时操作）  
-    ![输入图片说明](https://images.gitee.com/uploads/images/2022/0116/222157_f751560f_7686322.png "微信图片1.png")  
-    2、操作文件需如下配置（条件没有可为空，针对字段的操作一律选择document）\n
-    ![输入图片说明](https://images.gitee.com/uploads/images/2022/0116/222418_0f9e6d01_7686322.png "微信图片3.png")  
+    ![输入图片说明](%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%871.png)  
+    2、操作文件需如下配置（条件没有可为空，针对字段的操作一律选择document）  
+    ![输入图片说明](%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%872.png) 
 
 #### 参与贡献
 
