@@ -68,7 +68,7 @@ public class AutomaticDriver {
             String execteVersion = StringUtils.substring(resource.getFilename(), 0, indexOf);
             if (version != null) {
                 assert execteVersion != null;
-                if (version.compareTo(execteVersion)>0) {
+                if (version.compareTo(execteVersion) >= 0) {
                     continue;
                 }
 
