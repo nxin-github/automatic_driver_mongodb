@@ -16,10 +16,10 @@
 一、基于spring的自动执行方式：  
     1、添加com.liang到项目扫描路径  
     2、配置uri：spring.data.mongodb.uri  
-    3、在resource下创建mongofile文件夹，该文件夹为被扫描主文件夹。下面再创建以数据库名为命名的子文件夹，下面再创建要执行操作的propertifile文件即可  
+    3、在resource下创建mongofile文件夹，该文件夹为被扫描主文件夹。下面再创建要执行操作的propertifile文件即可  
 二、基于创建对象的执行方式：  
     1、创建AutomaticDriver对象，调用init方法传入uri或ip+port  
-    2、在resource下创建mongofile文件夹，该文件夹为被扫描主文件夹。下面再创建以数据库名为命名的子文件夹，下面再创建要执行操作的propertifile文件即可  
+    2、在resource下创建mongofile文件夹，该文件夹为被扫描主文件夹。下面再创建要执行操作的propertifile文件即可  
 三、注意事项：  
     1、文件夹层级关系如下（支持多数据库同时操作）  
     ![输入图片说明](%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%871.png)  
