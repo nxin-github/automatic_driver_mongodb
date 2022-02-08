@@ -21,24 +21,10 @@
     1、创建AutomaticDriver对象，调用init方法传入uri或ip+port  
     2、在resource下创建mongofile文件夹，该文件夹为被扫描主文件夹。下面再创建要执行操作的propertifile文件即可  
 三、注意事项：  
-    1、文件夹层级关系如下（支持多数据库同时操作）  
+    1、文件夹层级关系如下（支持多数据库同时操作，角标为01，02。。。因为直接对比的字符串）  
     ![输入图片说明](%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%871.png)  
     2、操作文件需如下配置（条件没有可为空，针对字段的操作一律选择document）  
-    ![输入图片说明](%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%872.png) 
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+    ![1644285077(1)](https://user-images.githubusercontent.com/59118548/152902982-339e9297-2a23-4ad5-b60a-8596b35180b1.jpg)
 
 
-#### 特技
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
