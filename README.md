@@ -22,7 +22,7 @@
     2、在resource下创建mongofile文件夹，该文件夹为被扫描主文件夹。下面再创建要执行操作的propertifile文件即可  
 三、注意事项：  
     1、文件夹层级关系如下（支持多数据库同时操作，角标为01，02。。。因为直接对比的字符串）  
-    ![输入图片说明](%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%871.png)  
+    ![微信图片1](https://user-images.githubusercontent.com/59118548/156518673-bef92e33-23a4-4d42-af4c-2cd34e198516.png)
     2、操作文件需如下配置（条件没有可为空，针对字段的操作一律选择document）  
     ![1644285077(1)](https://user-images.githubusercontent.com/59118548/152902982-339e9297-2a23-4ad5-b60a-8596b35180b1.jpg)
 
