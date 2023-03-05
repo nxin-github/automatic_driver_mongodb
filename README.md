@@ -21,10 +21,18 @@
     1、创建AutomaticDriver对象，调用init方法传入uri或ip+port  
     2、在resource下创建mongofile文件夹，该文件夹为被扫描主文件夹。下面再创建要执行操作的propertifile文件即可  
 三、注意事项：  
+    <p>
     1、文件夹层级关系如下（支持多数据库同时操作，角标为01，02。。。因为直接对比的字符串）  
+    </p>
+    <p>
     ![微信图片1](https://user-images.githubusercontent.com/59118548/156518673-bef92e33-23a4-4d42-af4c-2cd34e198516.png)
+    </p>
+    <p>
     2、操作文件需如下配置（条件没有可为空，针对字段的操作一律选择document）  
+    </p>
+    <p>
     ![1644285077(1)](https://user-images.githubusercontent.com/59118548/152902982-339e9297-2a23-4ad5-b60a-8596b35180b1.jpg)
+    </p>
 
 
 
